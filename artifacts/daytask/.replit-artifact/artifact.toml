@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Daytask — Employee Daily Task Manager"
+description = "A mobile-friendly daily task manager for managers and employees, with PIN logins, scheduled tasks, live completion alerts, and persistent task history."
+version = "1.0.0"
+id = "artifacts/daytask"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23113
+
+[services.development]
+run = "pnpm --filter @workspace/daytask run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/daytask", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/daytask/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23113"
+BASE_PATH = "/"

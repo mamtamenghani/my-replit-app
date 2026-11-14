@@ -1,10 +1,11 @@
-# [Project name]
+# Daytask
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A mobile-friendly employee daily task manager with manager assignment, employee checklists, and completion alerts.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/daytask run dev` — run the web app through its managed workflow
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,23 +23,39 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/daytask/` — responsive web app, service worker, and notification controls
+- `artifacts/api-server/src/routes/` — session, task, team, and notification endpoints
+- `lib/db/src/schema/` — persistent PostgreSQL schema
+- `lib/api-spec/openapi.yaml` — API contract; regenerate clients after editing
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Custom password/PIN authentication was explicitly requested: manager creates the first account, with no seeded credentials or public demo accounts.
+- Manager setup is atomic and disabled after the first manager exists. Employees are created by that manager.
+- Calendar dates and workday/completion times use Asia/Kolkata (IST) consistently, matching the initial intended working locale.
+- Completion messages remain in history after employees or tasks are removed. Removing an employee deletes their assigned tasks and sessions.
+- Browser push keys are generated server-side and stored persistently; they are not regenerated on process restarts.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Manager: employee creation/removal, task creation/editing/deletion, past/future date selection, daily employee progress, unread notification bell, full completion history.
+- Employee: private chronological daily checklist with separate Done and Not Done actions.
+- Completion alerts: live event stream, toast and chime, browser Web Push with service worker, and persistent unread history.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Do not add clock-in, clock-out, attendance tracking, or WhatsApp integration.
+- Workday task slots must stay within 10:00 AM to 8:30 PM.
+- Employees use their own selected name and 4-digit PIN or password and see only their own tasks.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Web Push needs browser permission, service worker support, and a secure origin. Real device delivery has not been verified.
+- Audio begins only after user interaction, as required by browsers.
+- SSE clients reconnect automatically; 15-second query polling supplies a freshness fallback. Event broadcasts are process-local.
+- The signed-in screens were not visually verified during the initial build; only the public manager setup screen was captured.
+- `web-push` 4 uses named ESM exports rather than a default export. Keep the namespace import.
+- Logging out of the manager account clears stored browser push subscriptions; other devices can re-enable notifications or reload to resubscribe.
 
 ## Pointers
 

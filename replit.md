@@ -52,6 +52,7 @@ A mobile-friendly Megatronics employee daily task manager with Owner/EA assignme
 
 ## User preferences
 
+- Keep One-Time Task and Everyday Checklist (Repeat Daily) in separate tabs inside the Assign a task form, not together as radio choices.
 - Do not add clock-in, clock-out, attendance tracking, or WhatsApp integration.
 - Workday task slots must stay within 10:00 AM to 8:30 PM.
 - Employees use their own selected name and 4-digit PIN or password and see only their own tasks.

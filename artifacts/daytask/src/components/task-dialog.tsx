@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCreateTask, useUpdateTask, type Task, type User } from '@workspace/api-client-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { TIME_OPTIONS, errMsg, invalidateWork, fmtTime } from '@/lib/daytask';
 import { useToast } from '@/hooks/use-toast';
 
@@ -62,29 +63,20 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
           <DialogDescription>Workday runs 10:00 to 20:30 IST. New tasks start as Not Done.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
-          <fieldset disabled={!!task} className="space-y-3">
-            <legend className="mb-2 text-sm font-medium">Task type</legend>
-            <div className={`rounded-xl border p-4 transition-colors ${!everyday ? 'border-primary bg-primary/5' : 'border-input bg-card'}`}>
-              <label className="flex cursor-pointer items-start gap-3 text-sm">
-                <input className="mt-0.5 accent-primary" type="radio" name="task-type" checked={!everyday} onChange={() => setEveryday(false)} aria-describedby="one-time-description" />
-                <span>
-                  <span className="block font-semibold">One-Time Task</span>
-                  <span id="one-time-description" className="mt-1 block text-xs text-muted-foreground">Only appears on the selected date.</span>
-                </span>
-              </label>
-            </div>
-            <div className={`rounded-xl border p-4 transition-colors ${everyday ? 'border-primary bg-primary/5' : 'border-input bg-muted/30'}`} data-testid="section-everyday-checklist">
-              <label className="flex cursor-pointer items-start gap-3 text-sm">
-                <input className="mt-0.5 accent-primary" type="radio" name="task-type" checked={everyday} onChange={() => setEveryday(true)} aria-describedby="everyday-description" data-testid="toggle-task-everyday" />
-                <span>
-                  <span className="block font-semibold">Everyday Checklist</span>
-                  <span className="mt-1 block text-xs font-medium text-primary">Repeat Daily</span>
-                  <span id="everyday-description" className="mt-1 block text-xs text-muted-foreground">Repeats every day from the selected start date, including weekends. Each day starts as Not Done.</span>
-                </span>
-              </label>
-              {everyday && task && <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">Changes apply to this entry and later uncompleted entries. Earlier history is kept.</p>}
-            </div>
-          </fieldset>
+          <Tabs value={everyday ? 'everyday' : 'one-time'} onValueChange={(value) => { if (!task) { setEveryday(value === 'everyday'); setErr(null); } }}>
+            <TabsList aria-label="Task type" className="grid h-auto w-full grid-cols-2 gap-1 p-1">
+              <TabsTrigger type="button" value="one-time" disabled={!!task && everyday} className="min-h-14 whitespace-normal px-2" data-testid="tab-task-one-time">One-Time Task</TabsTrigger>
+              <TabsTrigger type="button" value="everyday" disabled={!!task && !everyday} className="min-h-14 flex-col whitespace-normal px-2" data-testid="toggle-task-everyday">
+                <span>Everyday Checklist</span>
+                <span className="text-xs font-normal">(Repeat Daily)</span>
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value={everyday ? 'everyday' : 'one-time'} className="mt-4 space-y-4">
+              <p className="rounded-xl border bg-muted/30 p-3 text-xs text-muted-foreground">{everyday
+                ? task
+                  ? 'Changes apply to this entry and later uncompleted entries. Earlier history is kept.'
+                  : 'Repeats every day from the selected start date, including weekends. Each day starts as Not Done.'
+                : 'Only appears on the selected date.'}</p>
           <label className="block"><span className="mb-1.5 block text-sm font-medium">Employee</span>
             <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls} data-testid="select-task-employee">
               {employees.length === 0 && <option value="">No employees yet</option>}
@@ -119,6 +111,8 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
               {pending ? 'Saving…' : task ? 'Save changes' : everyday ? 'Add everyday checklist' : 'Add one-time task'}
             </button>
           </div>
+            </TabsContent>
+          </Tabs>
         </form>
       </DialogContent>
     </Dialog>

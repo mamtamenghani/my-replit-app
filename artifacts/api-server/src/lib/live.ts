@@ -6,7 +6,7 @@ import { logger } from "./logger";
 export const liveClients = new Map<Response, { id: number; role: string }>();
 export function broadcast(type: string, data: unknown, adminOnly = false) {
   for (const [res, user] of liveClients) {
-    if (!adminOnly || user.role === "admin") res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
+    if (!adminOnly || user.role === "admin" || user.role === "ea") res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
   }
 }
 export function disconnectUser(id: number) {
@@ -26,7 +26,7 @@ export function pushKey(): Promise<string> {
 }
 export async function pushCompletion(notification: unknown) {
   await pushKey();
-  const { rows } = await pool.query("SELECT endpoint,subscription FROM push_subscriptions p JOIN users u ON u.id=p.user_id WHERE u.role='admin'");
+  const { rows } = await pool.query("SELECT endpoint,subscription FROM push_subscriptions p JOIN users u ON u.id=p.user_id WHERE u.role IN ('admin','ea')");
   await Promise.all(rows.map(async row => {
     try { await webpush.sendNotification(row.subscription, JSON.stringify(notification), { TTL: 3600 }); }
     catch (error: any) {

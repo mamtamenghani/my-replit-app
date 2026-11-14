@@ -31,6 +31,7 @@ import type {
   PushConfig,
   PushInput,
   SessionInfo,
+  SheetStatus,
   StatusInput,
   Task,
   TaskInput,
@@ -728,6 +729,366 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteEmployeeMutationOptions(options));
+    }
+
+export const getListAssistantsUrl = () => {
+
+
+
+
+  return `/api/assistants`
+}
+
+export const listAssistants = async ( options?: Parameters<typeof customFetch>[1]): Promise<User[]> => {
+
+  return customFetch<User[]>(getListAssistantsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAssistantsQueryKey = () => {
+    return [
+    `/api/assistants`
+    ] as const;
+    }
+
+
+export const getListAssistantsQueryOptions = <TData = Awaited<ReturnType<typeof listAssistants>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAssistants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAssistantsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAssistants>>> = ({ signal }) => listAssistants({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAssistants>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAssistantsQueryResult = NonNullable<Awaited<ReturnType<typeof listAssistants>>>
+export type ListAssistantsQueryError = ErrorType<unknown>
+
+
+
+export function useListAssistants<TData = Awaited<ReturnType<typeof listAssistants>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAssistants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAssistantsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateAssistantUrl = () => {
+
+
+
+
+  return `/api/assistants`
+}
+
+export const createAssistant = async (adminInput: AdminInput, options?: Parameters<typeof customFetch>[1]): Promise<User> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<User>(getCreateAssistantUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(adminInput)
+  }
+);}
+
+
+
+
+
+export const getCreateAssistantMutationKey = () => ['createAssistant'] as const;
+
+export const getCreateAssistantMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAssistant>>, TError,CreateAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAssistant>>, TError,CreateAssistantMutationVariables, TContext> => {
+
+const mutationKey = getCreateAssistantMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAssistant>>, CreateAssistantMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAssistant(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAssistantMutationResult = NonNullable<Awaited<ReturnType<typeof createAssistant>>>
+    export type CreateAssistantMutationBody = BodyType<AdminInput>
+    export type CreateAssistantMutationError = ErrorType<unknown>
+    export type CreateAssistantMutationVariables = {data: BodyType<AdminInput>}
+
+    export const useCreateAssistant = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAssistant>>, TError,CreateAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAssistant>>,
+        TError,
+        CreateAssistantMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateAssistantMutationOptions(options));
+    }
+
+export const getDeleteAssistantUrl = (id: number,) => {
+
+
+
+
+  return `/api/assistants/${id}`
+}
+
+export const deleteAssistant = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDeleteAssistantUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteAssistantMutationKey = () => ['deleteAssistant'] as const;
+
+export const getDeleteAssistantMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAssistant>>, TError,DeleteAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAssistant>>, TError,DeleteAssistantMutationVariables, TContext> => {
+
+const mutationKey = getDeleteAssistantMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAssistant>>, DeleteAssistantMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAssistant(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAssistantMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAssistant>>>
+
+    export type DeleteAssistantMutationError = ErrorType<unknown>
+    export type DeleteAssistantMutationVariables = {id: number}
+
+    export const useDeleteAssistant = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAssistant>>, TError,DeleteAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAssistant>>,
+        TError,
+        DeleteAssistantMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteAssistantMutationOptions(options));
+    }
+
+export const getGetSheetStatusUrl = () => {
+
+
+
+
+  return `/api/sheets/status`
+}
+
+export const getSheetStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<SheetStatus> => {
+
+  return customFetch<SheetStatus>(getGetSheetStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSheetStatusQueryKey = () => {
+    return [
+    `/api/sheets/status`
+    ] as const;
+    }
+
+
+export const getGetSheetStatusQueryOptions = <TData = Awaited<ReturnType<typeof getSheetStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSheetStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSheetStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSheetStatus>>> = ({ signal }) => getSheetStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSheetStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSheetStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getSheetStatus>>>
+export type GetSheetStatusQueryError = ErrorType<unknown>
+
+
+
+export function useGetSheetStatus<TData = Awaited<ReturnType<typeof getSheetStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSheetStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSheetStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRetrySheetSyncUrl = () => {
+
+
+
+
+  return `/api/sheets/retry`
+}
+
+export const retrySheetSync = async ( options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getRetrySheetSyncUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRetrySheetSyncMutationKey = () => ['retrySheetSync'] as const;
+
+export const getRetrySheetSyncMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retrySheetSync>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof retrySheetSync>>, TError,void, TContext> => {
+
+const mutationKey = getRetrySheetSyncMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof retrySheetSync>>, void> = () => {
+
+
+          return  retrySheetSync(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RetrySheetSyncMutationResult = NonNullable<Awaited<ReturnType<typeof retrySheetSync>>>
+
+    export type RetrySheetSyncMutationError = ErrorType<unknown>
+
+
+    export const useRetrySheetSync = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof retrySheetSync>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof retrySheetSync>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRetrySheetSyncMutationOptions(options));
     }
 
 export const getListTasksUrl = (params: ListTasksParams,) => {

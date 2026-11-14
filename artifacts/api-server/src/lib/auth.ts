@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from "express";
 import { pool } from "@workspace/db";
 
 const scrypt = promisify(scryptCallback);
-export type SessionUser = { id: number; name: string; role: "admin" | "employee"; department: string; color: string };
+export type SessionUser = { id: number; name: string; role: "admin" | "ea" | "employee"; department: string; color: string };
 declare global {
   namespace Express {
     interface Request { user?: SessionUser }
@@ -61,7 +61,12 @@ export function requireUser(req: Request, res: Response, next: NextFunction) {
 }
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.user) { res.status(401).json({ error: "Please sign in." }); return; }
-  if (req.user.role !== "admin") { res.status(403).json({ error: "Owner access required." }); return; }
+  if (req.user.role !== "admin" && req.user.role !== "ea") { res.status(403).json({ error: "Owner or EA access required." }); return; }
+  next();
+}
+export function requireOwner(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) { res.status(401).json({ error: "Please sign in." }); return; }
+  if (req.user.role !== "admin") { res.status(403).json({ error: "Only the Owner can manage EA accounts." }); return; }
   next();
 }
 const attempts = new Map<string, { count: number; reset: number }>();

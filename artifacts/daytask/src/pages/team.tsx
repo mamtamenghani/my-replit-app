@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useListEmployees, useCreateEmployee, useDeleteEmployee, getListEmployeesQueryKey, getGetDirectoryQueryKey, type User } from '@workspace/api-client-react';
+import { useListEmployees, useCreateEmployee, useDeleteEmployee, getListEmployeesQueryKey, getGetDirectoryQueryKey, useGetMe, type User } from '@workspace/api-client-react';
 import { Plus, Trash2, Users } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
@@ -9,10 +9,12 @@ import {
 import { Avatar, EmptyState, ErrorState } from '@/components/brand';
 import { POLL, errMsg, invalidateWork } from '@/lib/daytask';
 import { useToast } from '@/hooks/use-toast';
+import { AssistantAccounts } from '@/components/assistant-accounts';
 
 const inputCls = 'h-11 w-full rounded-xl border border-input bg-card px-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10';
 
 export default function Team() {
+  const me = useGetMe();
   const qc = useQueryClient();
   const { toast } = useToast();
   const emps = useListEmployees({ query: { refetchInterval: POLL, queryKey: getListEmployeesQueryKey() } });
@@ -55,6 +57,7 @@ export default function Team() {
         </div>
         <button onClick={openNew} className="flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground hover:brightness-95" data-testid="button-add-employee"><Plus className="h-4 w-4" /> Add employee</button>
       </div>
+      {me.data?.user?.role === 'admin' && <AssistantAccounts />}
       {emps.isLoading && <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />)}</div>}
       {emps.isError && <ErrorState message="Couldn't load your team." onRetry={() => emps.refetch()} />}
       {emps.data && list.length === 0 && (

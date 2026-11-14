@@ -127,7 +127,7 @@ function Login({ users }: { users: User[] }) {
     mutation: {
       onSuccess: (user) => {
         qc.setQueryData(getGetMeQueryKey(), { user });
-        setLoc(user.role === 'admin' ? '/dashboard' : '/my-tasks');
+        setLoc(user.role !== 'employee' ? '/dashboard' : '/my-tasks');
       },
       onError: (e) => { setErr(errMsg(e, 'Could not sign in')); setPw(''); },
     },
@@ -155,7 +155,7 @@ function Login({ users }: { users: User[] }) {
                   className="rise group flex flex-col items-center gap-2 rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md active:scale-[.98]">
                   <Avatar name={u.name} color={u.color} size={52} />
                   <span className="line-clamp-1 text-sm font-semibold">{u.name}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{u.role === 'admin' ? 'Owner' : u.department || 'Team'}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{u.role === 'admin' ? 'Owner' : u.role === 'ea' ? 'EA · Executive Assistant' : u.department || 'Team'}</span>
                 </button>
               ))}
             </div>
@@ -171,12 +171,12 @@ function Login({ users }: { users: User[] }) {
             <div className="flex flex-col items-center text-center">
               <Avatar name={sel.name} color={sel.color} size={64} />
               <h2 className="font-display mt-3 text-2xl font-bold">Hi, {sel.name.split(' ')[0]}</h2>
-              <p className="text-sm text-muted-foreground">{sel.role === 'admin' ? 'Enter your password' : 'Enter your PIN or password'}</p>
+              <p className="text-sm text-muted-foreground">{sel.role !== 'employee' ? 'Enter your password' : 'Enter your PIN or password'}</p>
             </div>
             <div className="relative mt-6">
               <Lock className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus
-                inputMode={sel.role === 'admin' ? 'text' : undefined} autoComplete="current-password" data-testid="input-password"
+                inputMode={sel.role !== 'employee' ? 'text' : undefined} autoComplete="current-password" data-testid="input-password"
                 className="h-14 w-full rounded-xl border border-input bg-background pl-11 pr-4 font-mono text-lg tracking-[0.3em] outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
             </div>
             {err && <p className="mt-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="text-login-error">{err}</p>}

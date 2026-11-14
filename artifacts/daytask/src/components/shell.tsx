@@ -160,7 +160,7 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
       onError: (e) => toast({ title: 'Signed out locally', description: errMsg(e) }),
     },
   });
-  const nav = user.role === 'admin'
+  const nav = user.role !== 'employee'
     ? [{ href: '/dashboard', label: 'Today', icon: LayoutGrid }, { href: '/team', label: 'Team', icon: Users }, { href: '/activity', label: 'Activity', icon: History }]
     : [{ href: '/my-tasks', label: 'My day', icon: CalendarCheck }];
   return (
@@ -179,10 +179,10 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <LiveDot />
-            {user.role === 'admin' && <Bellbox />}
+            {user.role !== 'employee' && <Bellbox />}
             <div className="flex items-center gap-2 rounded-full bg-card py-1 pl-1 pr-1 ring-1 ring-border sm:pr-3">
               <Avatar name={user.name} color={user.color} size={28} />
-              <span className="hidden text-sm font-medium sm:inline" data-testid="text-current-user">{user.name}</span>
+              <span className="hidden text-sm font-medium sm:inline" data-testid="text-current-user">{user.name}<span className="ml-1 text-xs text-muted-foreground">{user.role === 'admin' ? 'Owner' : user.role === 'ea' ? 'EA' : ''}</span></span>
             </div>
             <button onClick={async () => { await unsubscribeDevice(); logout.mutate(); }} disabled={logout.isPending} data-testid="button-logout" aria-label="Sign out"
               className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground">

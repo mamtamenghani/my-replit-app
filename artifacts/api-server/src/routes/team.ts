@@ -4,6 +4,8 @@ import { CreateEmployeeBody, CreateEmployeeResponse, DeleteEmployeeParams, ListE
 import { requireAdmin, hashPassword, publicUser } from "../lib/auth";
 import { broadcast, disconnectUser } from "../lib/live";
 import { validDate } from "./tasks";
+import { ensureDailyTasks } from "../lib/recurring";
+import { markSheetDirty, queueSheetSync } from "../lib/sheets";
 const router = Router();
 router.get("/employees", requireAdmin, async (_req, res) => {
   const result = await pool.query("SELECT id,name,role,department,color FROM users WHERE role='employee' ORDER BY name");
@@ -23,15 +25,25 @@ router.post("/employees", requireAdmin, async (req, res) => {
 router.delete("/employees/:id", requireAdmin, async (req, res) => {
   const parsed = DeleteEmployeeParams.safeParse(req.params);
   if (!parsed.success) { res.status(400).json({ error: "Invalid employee." }); return; }
-  const result = await pool.query("DELETE FROM users WHERE id=$1 AND role='employee' RETURNING id", [parsed.data.id]);
-  if (!result.rowCount) { res.status(404).json({ error: "Employee not found." }); return; }
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result = await client.query("DELETE FROM users WHERE id=$1 AND role='employee' RETURNING id", [parsed.data.id]);
+    if (!result.rowCount) { await client.query("ROLLBACK"); res.status(404).json({ error: "Employee not found." }); return; }
+    await markSheetDirty(client);
+    await client.query("COMMIT");
+  } catch(error) { await client.query("ROLLBACK"); throw error; }
+  finally { client.release(); }
   disconnectUser(parsed.data.id);
   broadcast("refresh", {});
+  queueSheetSync();
   res.sendStatus(204);
 });
 router.get("/dashboard", requireAdmin, async (req, res) => {
   const parsed = GetDashboardQueryParams.safeParse(req.query);
   if (!parsed.success || !validDate(parsed.data.date)) { res.status(400).json({ error: "Choose a valid date." }); return; }
+  await ensureDailyTasks(parsed.data.date);
+  queueSheetSync();
   const result = await pool.query(`SELECT u.id,u.name,u.role,u.department,u.color,count(t.id)::int AS total,count(t.id) FILTER(WHERE t.done)::int AS done
     FROM users u LEFT JOIN tasks t ON t.employee_id=u.id AND t.date=$1 WHERE u.role='employee' GROUP BY u.id ORDER BY u.name`, [parsed.data.date]);
   const employees = result.rows.map(r => ({ employee: publicUser(r), total: r.total, done: r.done }));

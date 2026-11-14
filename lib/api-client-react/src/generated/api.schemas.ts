@@ -13,6 +13,7 @@ export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 export const UserRole = {
   admin: 'admin',
+  ea: 'ea',
   employee: 'employee',
 } as const;
 
@@ -82,6 +83,8 @@ export interface Task {
   done: boolean;
   /** @nullable */
   completedAt: string | null;
+  /** @nullable */
+  recurringId: number | null;
 }
 
 export interface TaskInput {
@@ -99,6 +102,16 @@ export interface TaskInput {
   startTime: string;
   /** @pattern ^\d{2}:\d{2}$ */
   endTime: string;
+  everyday?: boolean;
+}
+
+export interface SheetStatus {
+  pending: boolean;
+  /** @nullable */
+  lastSyncedAt: string | null;
+  /** @nullable */
+  error: string | null;
+  url: string;
 }
 
 export interface StatusInput {

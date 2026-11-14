@@ -33,7 +33,8 @@ function Protected({ role, children }: { role: User['role']; children: (u: User)
   if (me.isError) return <div className="mx-auto max-w-md px-6 py-24"><ErrorState message="Couldn't check your session." onRetry={() => me.refetch()} /></div>;
   const user = me.data?.user;
   if (!user) return <Redirect to="/" />;
-  if (user.role !== role) return <Redirect to={user.role === 'admin' ? '/dashboard' : '/my-tasks'} />;
+  const allowed = role === 'admin' ? user.role !== 'employee' : user.role === role;
+  if (!allowed) return <Redirect to={user.role !== 'employee' ? '/dashboard' : '/my-tasks'} />;
   return <Shell user={user}>{children(user)}</Shell>;
 }
 
@@ -41,7 +42,7 @@ function Entry() {
   const me = useGetMe();
   if (me.isLoading) return <Splash />;
   const user = me.data?.user;
-  if (user) return <Redirect to={user.role === 'admin' ? '/dashboard' : '/my-tasks'} />;
+  if (user) return <Redirect to={user.role !== 'employee' ? '/dashboard' : '/my-tasks'} />;
   return <AuthPage />;
 }
 

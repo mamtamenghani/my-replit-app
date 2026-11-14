@@ -20,4 +20,5 @@ export interface TaskInput {
   startTime: string;
   /** @pattern ^\d{2}:\d{2}$ */
   endTime: string;
+  everyday?: boolean;
 }

@@ -18,6 +18,7 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
   const [date, setDate] = useState(defaultDate);
   const [startTime, setStart] = useState('10:00');
   const [endTime, setEnd] = useState('11:00');
+  const [everyday, setEveryday] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,9 +27,11 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
     if (task) {
       setEmployeeId(String(task.employeeId)); setTitle(task.title); setDescription(task.description ?? '');
       setDate(task.date); setStart(task.startTime); setEnd(task.endTime);
+      setEveryday(!!task.recurringId);
     } else {
       setEmployeeId(defaultEmployeeId ? String(defaultEmployeeId) : employees[0] ? String(employees[0].id) : '');
       setTitle(''); setDescription(''); setDate(defaultDate); setStart('10:00'); setEnd('11:00');
+      setEveryday(false);
     }
   }, [open, task, defaultDate, defaultEmployeeId, employees]);
 
@@ -47,7 +50,7 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
     if (!title.trim()) return setErr('Give the task a title.');
     if (!date) return setErr('Pick a date.');
     if (!(startTime >= '10:00' && startTime < endTime && endTime <= '20:30')) return setErr('Time slot must sit between 10:00 and 20:30, with start before end.');
-    const data = { employeeId: Number(employeeId), title: title.trim(), description: description.trim(), date, startTime, endTime };
+    const data = { employeeId: Number(employeeId), title: title.trim(), description: description.trim(), date, startTime, endTime, everyday };
     if (task) update.mutate({ id: task.id, data }); else create.mutate({ data });
   };
 
@@ -59,6 +62,20 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
           <DialogDescription>Workday runs 10:00 to 20:30 IST. New tasks start as Not Done.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
+          <fieldset disabled={!!task} className="rounded-xl border bg-muted/30 p-3">
+            <legend className="px-1 text-sm font-medium">Task type</legend>
+            <div className="space-y-2">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input type="radio" name="task-type" checked={!everyday} onChange={() => setEveryday(false)} /> One-Time Task
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input type="radio" name="task-type" checked={everyday} onChange={() => setEveryday(true)} data-testid="toggle-task-everyday" /> Everyday Checklist (Repeat Daily)
+              </label>
+            </div>
+          </fieldset>
+          {everyday && <p className="text-xs text-muted-foreground">{task
+            ? 'Changes apply to this entry and later uncompleted entries. Earlier history is kept.'
+            : 'Repeats every day from the selected start date, including weekends. Each day starts as Not Done.'}</p>}
           <label className="block"><span className="mb-1.5 block text-sm font-medium">Employee</span>
             <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls} data-testid="select-task-employee">
               {employees.length === 0 && <option value="">No employees yet</option>}
@@ -72,8 +89,8 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={2000} rows={3} className={inputCls + ' h-auto py-2.5'} data-testid="input-task-description" />
           </label>
           <div className="grid grid-cols-3 gap-3">
-            <label className="col-span-3 block sm:col-span-1"><span className="mb-1.5 block text-sm font-medium">Date</span>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} data-testid="input-task-date" />
+            <label className="col-span-3 block sm:col-span-1"><span className="mb-1.5 block text-sm font-medium">{everyday && !task ? 'Starts on' : 'Date'}</span>
+              <input type="date" disabled={!!task?.recurringId} value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} data-testid="input-task-date" />
             </label>
             <label className="block sm:col-span-1"><span className="mb-1.5 block text-sm font-medium">Start</span>
               <select value={startTime} onChange={(e) => setStart(e.target.value)} className={inputCls + ' font-mono'} data-testid="select-task-start">
@@ -90,7 +107,7 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
           <div className="flex justify-end gap-2 pt-1">
             <button type="button" onClick={() => onOpenChange(false)} className="h-11 rounded-xl px-4 text-sm font-medium hover:bg-muted" data-testid="button-cancel-task">Cancel</button>
             <button type="submit" disabled={pending || employees.length === 0} className="h-11 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50" data-testid="button-save-task">
-              {pending ? 'Saving…' : task ? 'Save changes' : 'Assign task'}
+              {pending ? 'Saving…' : task ? 'Save changes' : everyday ? 'Add everyday checklist' : 'Add one-time task'}
             </button>
           </div>
         </form>

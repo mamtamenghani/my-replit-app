@@ -43,7 +43,7 @@ router.post("/auth/login", limitLogin, async (req, res) => {
 router.post("/auth/logout", async (req, res) => {
   if (req.user) {
     disconnectUser(req.user.id);
-    if (req.user.role === "admin") await pool.query("DELETE FROM push_subscriptions WHERE user_id=$1", [req.user.id]);
+    if (req.user.role !== "employee") await pool.query("DELETE FROM push_subscriptions WHERE user_id=$1", [req.user.id]);
   }
   await destroySession(req, res);
   res.sendStatus(204);

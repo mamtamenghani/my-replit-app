@@ -17,4 +17,6 @@ export interface Task {
   done: boolean;
   /** @nullable */
   completedAt: string | null;
+  /** @nullable */
+  recurringId: number | null;
 }

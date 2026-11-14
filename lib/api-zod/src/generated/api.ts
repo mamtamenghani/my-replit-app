@@ -17,7 +17,7 @@ export const GetDirectoryResponse = zod.object({
   "users": zod.array(zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 }))
@@ -39,7 +39,7 @@ export const SetupAdminBody = zod.object({
 export const SetupAdminResponse = zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 })
@@ -57,7 +57,7 @@ export const LoginBody = zod.object({
 export const LoginResponse = zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 })
@@ -67,7 +67,7 @@ export const GetMeResponse = zod.object({
   "user": zod.union([zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 }),zod.null()])
@@ -80,7 +80,7 @@ export const LogoutResponse = zod.void()
 export const ListEmployeesResponseItem = zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 })
@@ -105,7 +105,7 @@ export const CreateEmployeeBody = zod.object({
 export const CreateEmployeeResponse = zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 })
@@ -116,6 +116,55 @@ export const DeleteEmployeeParams = zod.object({
 })
 
 export const DeleteEmployeeResponse = zod.void()
+
+
+export const ListAssistantsResponseItem = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'ea', 'employee']),
+  "department": zod.string(),
+  "color": zod.string()
+})
+export const ListAssistantsResponse = zod.array(ListAssistantsResponseItem)
+
+
+export const createAssistantBodyNameMax = 80;
+
+export const createAssistantBodyPasswordMin = 8;
+export const createAssistantBodyPasswordMax = 128;
+
+
+
+export const CreateAssistantBody = zod.object({
+  "name": zod.string().min(1).max(createAssistantBodyNameMax),
+  "password": zod.string().min(createAssistantBodyPasswordMin).max(createAssistantBodyPasswordMax)
+})
+
+export const CreateAssistantResponse = zod.object({
+  "id": zod.number().int(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'ea', 'employee']),
+  "department": zod.string(),
+  "color": zod.string()
+})
+
+
+export const DeleteAssistantParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const DeleteAssistantResponse = zod.void()
+
+
+export const GetSheetStatusResponse = zod.object({
+  "pending": zod.boolean(),
+  "lastSyncedAt": zod.string().nullable(),
+  "error": zod.string().nullable(),
+  "url": zod.string()
+})
+
+
+export const RetrySheetSyncResponse = zod.void()
 
 
 export const ListTasksQueryParams = zod.object({
@@ -133,7 +182,8 @@ export const ListTasksResponseItem = zod.object({
   "startTime": zod.string(),
   "endTime": zod.string(),
   "done": zod.boolean(),
-  "completedAt": zod.string().nullable()
+  "completedAt": zod.string().nullable(),
+  "recurringId": zod.number().int().nullable()
 })
 export const ListTasksResponse = zod.array(ListTasksResponseItem)
 
@@ -145,7 +195,7 @@ export const createTaskBodyDescriptionMax = 2000;
 export const createTaskBodyDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createTaskBodyStartTimeRegExp = new RegExp('^\\d{2}:\\d{2}$');
 export const createTaskBodyEndTimeRegExp = new RegExp('^\\d{2}:\\d{2}$');
-
+export const createTaskBodyEverydayDefault = false;
 
 export const CreateTaskBody = zod.object({
   "employeeId": zod.number().int(),
@@ -153,7 +203,8 @@ export const CreateTaskBody = zod.object({
   "description": zod.string().max(createTaskBodyDescriptionMax).optional(),
   "date": zod.string().regex(createTaskBodyDateRegExp),
   "startTime": zod.string().regex(createTaskBodyStartTimeRegExp),
-  "endTime": zod.string().regex(createTaskBodyEndTimeRegExp)
+  "endTime": zod.string().regex(createTaskBodyEndTimeRegExp),
+  "everyday": zod.boolean().default(createTaskBodyEverydayDefault)
 })
 
 export const CreateTaskResponse = zod.object({
@@ -166,7 +217,8 @@ export const CreateTaskResponse = zod.object({
   "startTime": zod.string(),
   "endTime": zod.string(),
   "done": zod.boolean(),
-  "completedAt": zod.string().nullable()
+  "completedAt": zod.string().nullable(),
+  "recurringId": zod.number().int().nullable()
 })
 
 
@@ -181,7 +233,7 @@ export const updateTaskBodyDescriptionMax = 2000;
 export const updateTaskBodyDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const updateTaskBodyStartTimeRegExp = new RegExp('^\\d{2}:\\d{2}$');
 export const updateTaskBodyEndTimeRegExp = new RegExp('^\\d{2}:\\d{2}$');
-
+export const updateTaskBodyEverydayDefault = false;
 
 export const UpdateTaskBody = zod.object({
   "employeeId": zod.number().int(),
@@ -189,7 +241,8 @@ export const UpdateTaskBody = zod.object({
   "description": zod.string().max(updateTaskBodyDescriptionMax).optional(),
   "date": zod.string().regex(updateTaskBodyDateRegExp),
   "startTime": zod.string().regex(updateTaskBodyStartTimeRegExp),
-  "endTime": zod.string().regex(updateTaskBodyEndTimeRegExp)
+  "endTime": zod.string().regex(updateTaskBodyEndTimeRegExp),
+  "everyday": zod.boolean().default(updateTaskBodyEverydayDefault)
 })
 
 export const UpdateTaskResponse = zod.object({
@@ -202,7 +255,8 @@ export const UpdateTaskResponse = zod.object({
   "startTime": zod.string(),
   "endTime": zod.string(),
   "done": zod.boolean(),
-  "completedAt": zod.string().nullable()
+  "completedAt": zod.string().nullable(),
+  "recurringId": zod.number().int().nullable()
 })
 
 
@@ -231,7 +285,8 @@ export const SetTaskStatusResponse = zod.object({
   "startTime": zod.string(),
   "endTime": zod.string(),
   "done": zod.boolean(),
-  "completedAt": zod.string().nullable()
+  "completedAt": zod.string().nullable(),
+  "recurringId": zod.number().int().nullable()
 })
 
 
@@ -248,7 +303,7 @@ export const GetDashboardResponse = zod.object({
   "employee": zod.object({
   "id": zod.number().int(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'employee']),
+  "role": zod.enum(['admin', 'ea', 'employee']),
   "department": zod.string(),
   "color": zod.string()
 }),

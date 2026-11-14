@@ -14,6 +14,7 @@ import { TaskDialog } from '@/components/task-dialog';
 import { POLL, todayStr, shiftDate, parseDate, fmtTime, errMsg, invalidateWork, istStamp } from '@/lib/daytask';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { SheetSyncStatus } from '@/components/sheet-sync-status';
 
 type Filter = 'all' | 'done' | 'pending';
 
@@ -73,6 +74,7 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <SheetSyncStatus />
       {dash.isError ? <ErrorState message="Couldn't load the day summary." onRetry={() => dash.refetch()} /> : (
         <div className="rise grid gap-3 md:grid-cols-[1.3fr_1fr_1fr_1fr]" style={{ animationDelay: '60ms' }}>
           <div className="flex items-center gap-4 rounded-2xl bg-primary p-5 text-primary-foreground">
@@ -95,7 +97,7 @@ export default function Dashboard() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        <aside className="rise space-y-2" style={{ animationDelay: '120ms' }}>
+        <aside className="rise min-w-0 space-y-2" style={{ animationDelay: '120ms' }}>
           <div className="flex items-center justify-between px-1">
             <h2 className="font-display font-semibold">People</h2>
             {emp != null && <button onClick={() => setEmp(null)} className="text-xs font-medium text-primary" data-testid="button-clear-employee">Show all</button>}
@@ -127,7 +129,7 @@ export default function Dashboard() {
           </div>
         </aside>
 
-        <section className="rise space-y-3" style={{ animationDelay: '180ms' }}>
+        <section className="rise min-w-0 space-y-3" style={{ animationDelay: '180ms' }}>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -144,7 +146,7 @@ export default function Dashboard() {
               </div>
               <button onClick={() => setDialog({ open: true, task: null })} data-testid="button-new-task"
                 className="ml-auto flex h-10 items-center gap-1.5 rounded-xl bg-accent px-4 text-sm font-semibold text-accent-foreground transition hover:brightness-95 active:scale-[.98]">
-                <Plus className="h-4 w-4" /> Task
+                <Plus className="h-4 w-4" /> Add task
               </button>
             </div>
           </div>
@@ -173,13 +175,16 @@ export default function Dashboard() {
                     </span>
                   </div>
                   {t.description && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{t.description}</p>}
-                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <p className="mt-1 text-[11px] font-medium text-primary">{t.recurringId ? 'Everyday checklist' : 'One-Time task'}</p>
+                  <p className="mt-1 text-xs text-muted-foreground" data-testid={`performed-task-${t.id}`}>
+                    Actual Time Performed: <span className={t.done ? 'font-medium text-[hsl(var(--done))]' : ''}>{t.done && t.completedAt ? istStamp(t.completedAt) : '—'}</span>
+                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <Avatar name={t.employeeName} color={colorOf(t.employeeId)} size={20} className="ring-0" />
                     <span className="font-medium text-foreground/80">{t.employeeName}</span>
-                    {t.done && t.completedAt && <span className="flex items-center gap-1 text-[hsl(var(--done))]"><Check className="h-3 w-3" />{istStamp(t.completedAt)}</span>}
-                    <div className="ml-auto flex gap-1 opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100">
+                    <div className="ml-auto flex gap-1">
                       <button onClick={() => setDialog({ open: true, task: t })} className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-muted" aria-label="Edit task" data-testid={`button-edit-task-${t.id}`}><Pencil className="h-3.5 w-3.5" /></button>
-                      <button onClick={() => setToDelete(t)} className="flex h-8 w-8 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10" aria-label="Delete task" data-testid={`button-delete-task-${t.id}`}><Trash2 className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setToDelete(t)} className="flex h-8 items-center justify-center gap-1 rounded-lg px-2 text-destructive hover:bg-destructive/10" aria-label={t.recurringId ? 'Delete everyday checklist' : 'Delete one-time task'} data-testid={`button-delete-task-${t.id}`}><Trash2 className="h-3.5 w-3.5" /> Delete</button>
                     </div>
                   </div>
                 </div>
@@ -193,13 +198,15 @@ export default function Dashboard() {
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-display">Delete this task?</AlertDialogTitle>
-            <AlertDialogDescription>"{toDelete?.title}" will be removed from {toDelete?.employeeName}'s checklist. This can't be undone.</AlertDialogDescription>
+            <AlertDialogTitle className="font-display">{toDelete?.recurringId ? 'Delete everyday checklist?' : 'Delete this one-time task?'}</AlertDialogTitle>
+            <AlertDialogDescription>{toDelete?.recurringId
+              ? `"${toDelete.title}" will be removed from ${toDelete.employeeName}'s checklist on ${toDelete.date} and every later date, including future repeats. Earlier history is kept. Corresponding Google Sheet rows will also be removed. This can't be undone.`
+              : `"${toDelete?.title}" will be removed from ${toDelete?.employeeName}'s checklist and Google Sheet. This can't be undone.`}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete">Keep it</AlertDialogCancel>
             <AlertDialogAction onClick={(e) => { e.preventDefault(); if (toDelete) del.mutate({ id: toDelete.id }); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" data-testid="button-confirm-delete">
-              {del.isPending ? 'Deleting…' : 'Delete task'}
+              {del.isPending ? 'Deleting…' : toDelete?.recurringId ? 'Delete this date and future repeats' : 'Delete task'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

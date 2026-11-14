@@ -78,7 +78,8 @@ export default function MyTasks({ user }: { user: User }) {
                   </div>
                   <p className={cn('font-semibold leading-snug', t.done && 'text-muted-foreground line-through')}>{t.title}</p>
                   {t.description && <p className="mt-0.5 text-sm text-muted-foreground">{t.description}</p>}
-                  {t.done && t.completedAt && <p className="mt-1 text-xs text-[hsl(var(--done))]">Completed {istStamp(t.completedAt)}</p>}
+                  <p className="mt-1 text-xs text-primary">{t.recurringId ? 'Everyday checklist' : 'One-Time task'}</p>
+                  {t.done && t.completedAt && <p className="mt-1 text-xs text-[hsl(var(--done))]">Actual Time Performed: {istStamp(t.completedAt)}</p>}
                 </div>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">

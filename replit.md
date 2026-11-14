@@ -1,6 +1,6 @@
 # Megatronics — Day Task
 
-A mobile-friendly employee daily task manager with manager assignment, employee checklists, and completion alerts.
+A mobile-friendly Megatronics employee daily task manager with Owner/EA assignment, employee checklists, and completion alerts.
 
 ## Run & Operate
 
@@ -31,16 +31,24 @@ A mobile-friendly employee daily task manager with manager assignment, employee 
 ## Architecture decisions
 
 - Custom password/PIN authentication was explicitly requested: manager creates the first account, with no seeded credentials or public demo accounts.
-- Manager setup is atomic and disabled after the first manager exists. Employees are created by that manager.
+- Owner setup is atomic and disabled after the first Owner exists. Owner and EA can create employees; only Owner can create or revoke EA accounts.
 - Calendar dates and workday/completion times use Asia/Kolkata (IST) consistently, matching the initial intended working locale.
 - Completion messages remain in history after employees or tasks are removed. Removing an employee deletes their assigned tasks and sessions.
 - Browser push keys are generated server-side and stored persistently; they are not regenerated on process restarts.
 
 ## Product
 
-- Manager: employee creation/removal, task creation/editing/deletion, past/future date selection, daily employee progress, unread notification bell, full completion history.
+- Owner and EA: employee creation/removal, task creation/editing/deletion, past/future date selection, daily employee progress, unread notification bell, full completion history.
+- Owner keeps internal role `admin`; Executive Assistant uses `ea`. Both have task-management and completion-alert access, but EA cannot grant administrative access.
 - Employee: private chronological daily checklist with separate Done and Not Done actions.
 - Completion alerts: live event stream, toast and chime, browser Web Push with service worker, and persistent unread history.
+- Everyday checklists repeat on every calendar day, including weekends, from their selected start date. Daily entries have independent completion states and server timestamps.
+- Deleting an Everyday checklist stops its recurrence on the selected date and deletes that date and later entries; earlier history is retained. The confirmation explicitly describes this scope.
+- Actual Time Performed is the server-recorded completion time displayed in IST; Not Done clears it.
+- Google Sheets uses the connected `google-sheet` integration, not a service-account secret. The linked spreadsheet's gid=0 tab is the sync target; it must retain the app's eight-column header.
+- Sheets sync uses a persistent revision updated in each task transaction, immediate background delivery, and retries after failures. Only app-owned `MT-` task rows are changed or deleted; unrelated rows are left intact.
+- Preview task IDs use `MT-DEV-` while published task IDs use `MT-`, and sync only manages its own environment's IDs. Keep this separation: the two databases may contain overlapping numeric IDs but share a connected spreadsheet.
+- Daily entries catch up after downtime on startup or checklist reads, and while the server is running a timer creates new-day entries. Sync status and manual retry are visible on the dashboard.
 
 ## User preferences
 
@@ -55,7 +63,6 @@ A mobile-friendly employee daily task manager with manager assignment, employee 
 - Web Push needs browser permission, service worker support, and a secure origin. Real device delivery has not been verified.
 - Audio begins only after user interaction, as required by browsers.
 - SSE clients reconnect automatically; 15-second query polling supplies a freshness fallback. Event broadcasts are process-local.
-- The signed-in screens were not visually verified during the initial build; only the public manager setup screen was captured.
 - `web-push` 4 uses named ESM exports rather than a default export. Keep the namespace import.
 - Logging out of the manager account clears stored browser push subscriptions; other devices can re-enable notifications or reload to resubscribe.
 

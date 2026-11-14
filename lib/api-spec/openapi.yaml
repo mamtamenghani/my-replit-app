@@ -96,6 +96,51 @@ paths:
       operationId: deleteEmployee
       responses:
         "204": { description: Removed along with assigned tasks }
+  /assistants:
+    get:
+      operationId: listAssistants
+      responses:
+        "200":
+          description: Executive assistants, visible to Owner
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+    post:
+      operationId: createAssistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminInput" }
+      responses:
+        "201":
+          description: Executive assistant account created by Owner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+  /assistants/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    delete:
+      operationId: deleteAssistant
+      responses:
+        "204": { description: "EA login revoked, employee tasks preserved" }
+  /sheets/status:
+    get:
+      operationId: getSheetStatus
+      responses:
+        "200":
+          description: Persistent Google Sheets sync status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SheetStatus" }
+  /sheets/retry:
+    post:
+      operationId: retrySheetSync
+      responses:
+        "202": { description: Sync queued }
   /tasks:
     get:
       operationId: listTasks
@@ -218,7 +263,7 @@ components:
       properties:
         id: { type: integer }
         name: { type: string }
-        role: { type: string, enum: [admin, employee] }
+        role: { type: string, enum: [admin, ea, employee] }
         department: { type: string }
         color: { type: string }
     Directory:
@@ -258,7 +303,7 @@ components:
         department: { type: string, maxLength: 80 }
     Task:
       type: object
-      required: [id, employeeId, employeeName, title, description, date, startTime, endTime, done, completedAt]
+      required: [id, employeeId, employeeName, title, description, date, startTime, endTime, done, completedAt, recurringId]
       properties:
         id: { type: integer }
         employeeId: { type: integer }
@@ -270,6 +315,7 @@ components:
         endTime: { type: string }
         done: { type: boolean }
         completedAt: { type: [string, "null"] }
+        recurringId: { type: [integer, "null"] }
     TaskInput:
       type: object
       required: [employeeId, title, date, startTime, endTime]
@@ -280,6 +326,15 @@ components:
         date: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
         startTime: { type: string, pattern: '^\d{2}:\d{2}$' }
         endTime: { type: string, pattern: '^\d{2}:\d{2}$' }
+        everyday: { type: boolean, default: false }
+    SheetStatus:
+      type: object
+      required: [pending, lastSyncedAt, error, url]
+      properties:
+        pending: { type: boolean }
+        lastSyncedAt: { type: [string, "null"] }
+        error: { type: [string, "null"] }
+        url: { type: string }
     StatusInput:
       type: object
       required: [done]

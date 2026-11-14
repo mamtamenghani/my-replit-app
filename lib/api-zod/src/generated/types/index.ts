@@ -19,6 +19,7 @@ export * from './pushConfig';
 export * from './pushInput';
 export * from './pushInputKeys';
 export * from './sessionInfo';
+export * from './sheetStatus';
 export * from './statusInput';
 export * from './task';
 export * from './taskInput';

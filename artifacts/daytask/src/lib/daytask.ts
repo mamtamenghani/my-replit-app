@@ -3,6 +3,8 @@ import {
   getListEmployeesQueryKey,
   getListNotificationsQueryKey,
   getGetDirectoryQueryKey,
+  getGetSheetStatusQueryKey,
+  getListAssistantsQueryKey,
 } from '@workspace/api-client-react';
 
 export const TASKS_KEY = '/api/tasks';
@@ -66,6 +68,8 @@ export function invalidateWork(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: [TASKS_KEY] });
   qc.invalidateQueries({ queryKey: [DASHBOARD_KEY] });
   qc.invalidateQueries({ queryKey: getListEmployeesQueryKey() });
+  qc.invalidateQueries({ queryKey: getGetSheetStatusQueryKey() });
+  qc.invalidateQueries({ queryKey: getListAssistantsQueryKey() });
 }
 export function invalidateEverything(qc: QueryClient) {
   invalidateWork(qc);

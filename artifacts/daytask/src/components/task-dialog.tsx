@@ -62,20 +62,29 @@ export function TaskDialog({ open, onOpenChange, employees, task, defaultDate, d
           <DialogDescription>Workday runs 10:00 to 20:30 IST. New tasks start as Not Done.</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
-          <fieldset disabled={!!task} className="rounded-xl border bg-muted/30 p-3">
-            <legend className="px-1 text-sm font-medium">Task type</legend>
-            <div className="space-y-2">
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input type="radio" name="task-type" checked={!everyday} onChange={() => setEveryday(false)} /> One-Time Task
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input type="radio" name="task-type" checked={everyday} onChange={() => setEveryday(true)} data-testid="toggle-task-everyday" /> Everyday Checklist (Repeat Daily)
+          <fieldset disabled={!!task} className="space-y-3">
+            <legend className="mb-2 text-sm font-medium">Task type</legend>
+            <div className={`rounded-xl border p-4 transition-colors ${!everyday ? 'border-primary bg-primary/5' : 'border-input bg-card'}`}>
+              <label className="flex cursor-pointer items-start gap-3 text-sm">
+                <input className="mt-0.5 accent-primary" type="radio" name="task-type" checked={!everyday} onChange={() => setEveryday(false)} aria-describedby="one-time-description" />
+                <span>
+                  <span className="block font-semibold">One-Time Task</span>
+                  <span id="one-time-description" className="mt-1 block text-xs text-muted-foreground">Only appears on the selected date.</span>
+                </span>
               </label>
             </div>
+            <div className={`rounded-xl border p-4 transition-colors ${everyday ? 'border-primary bg-primary/5' : 'border-input bg-muted/30'}`} data-testid="section-everyday-checklist">
+              <label className="flex cursor-pointer items-start gap-3 text-sm">
+                <input className="mt-0.5 accent-primary" type="radio" name="task-type" checked={everyday} onChange={() => setEveryday(true)} aria-describedby="everyday-description" data-testid="toggle-task-everyday" />
+                <span>
+                  <span className="block font-semibold">Everyday Checklist</span>
+                  <span className="mt-1 block text-xs font-medium text-primary">Repeat Daily</span>
+                  <span id="everyday-description" className="mt-1 block text-xs text-muted-foreground">Repeats every day from the selected start date, including weekends. Each day starts as Not Done.</span>
+                </span>
+              </label>
+              {everyday && task && <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">Changes apply to this entry and later uncompleted entries. Earlier history is kept.</p>}
+            </div>
           </fieldset>
-          {everyday && <p className="text-xs text-muted-foreground">{task
-            ? 'Changes apply to this entry and later uncompleted entries. Earlier history is kept.'
-            : 'Repeats every day from the selected start date, including weekends. Each day starts as Not Done.'}</p>}
           <label className="block"><span className="mb-1.5 block text-sm font-medium">Employee</span>
             <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls} data-testid="select-task-employee">
               {employees.length === 0 && <option value="">No employees yet</option>}

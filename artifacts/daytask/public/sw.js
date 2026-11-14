@@ -3,7 +3,7 @@ self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener('push', (event) => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { message: event.data ? event.data.text() : '' }; }
-  event.waitUntil(self.registration.showNotification('Daytask', {
+  event.waitUntil(self.registration.showNotification('Megatronics Day Task', {
     body: payload.message || 'A task was updated',
     tag: 'daytask-' + (payload.id || Date.now()),
     data: { url: self.registration.scope + 'dashboard' },

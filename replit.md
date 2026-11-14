@@ -1,4 +1,4 @@
-# Daytask
+# Megatronics — Day Task
 
 A mobile-friendly employee daily task manager with manager assignment, employee checklists, and completion alerts.
 
@@ -47,6 +47,7 @@ A mobile-friendly employee daily task manager with manager assignment, employee 
 - Do not add clock-in, clock-out, attendance tracking, or WhatsApp integration.
 - Workday task slots must stay within 10:00 AM to 8:30 PM.
 - Employees use their own selected name and 4-digit PIN or password and see only their own tasks.
+- Company name is Megatronics; use the supplied Megatronics logo and call the admin role Owner, not Manager. Keep internal `admin` role identifiers for compatibility.
 
 ## Gotchas
 

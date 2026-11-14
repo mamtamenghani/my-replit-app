@@ -86,7 +86,7 @@ function Setup() {
         <Logo />
         <div className="rise my-auto w-full max-w-md py-10">
           <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">First run · Step 1 of 1</p>
-          <h1 className="font-display mt-3 text-4xl font-bold leading-[1.05] sm:text-5xl">Set up the manager account.</h1>
+          <h1 className="font-display mt-3 text-4xl font-bold leading-[1.05] sm:text-5xl">Set up the owner account.</h1>
           <p className="mt-3 text-muted-foreground">You'll plan each person's day in time slots between 10:00 and 20:30 and watch it fill in as they check things off.</p>
           <form onSubmit={submit} className="mt-8 space-y-4">
             <Field label="Your name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Priya Raman" maxLength={80} autoFocus data-testid="input-admin-name" />
@@ -95,7 +95,7 @@ function Setup() {
             {err && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="text-setup-error">{err}</p>}
             <button type="submit" disabled={setup.isPending} data-testid="button-setup"
               className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-primary-foreground transition hover:opacity-90 active:scale-[.99] disabled:opacity-60">
-              {setup.isPending ? 'Creating account…' : <>Create manager account <ArrowRight className="h-4 w-4" /></>}
+              {setup.isPending ? 'Creating account…' : <>Create owner account <ArrowRight className="h-4 w-4" /></>}
             </button>
           </form>
           <p className="mt-5 flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4" /> This screen only appears once. Next, add your team.</p>
@@ -155,12 +155,12 @@ function Login({ users }: { users: User[] }) {
                   className="rise group flex flex-col items-center gap-2 rounded-2xl border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md active:scale-[.98]">
                   <Avatar name={u.name} color={u.color} size={52} />
                   <span className="line-clamp-1 text-sm font-semibold">{u.name}</span>
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{u.role === 'admin' ? 'Manager' : u.department || 'Team'}</span>
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{u.role === 'admin' ? 'Owner' : u.department || 'Team'}</span>
                 </button>
               ))}
             </div>
             {users.filter((u) => u.role === 'employee').length === 0 && (
-              <p className="mt-6 text-center text-sm text-muted-foreground">No employees yet. The manager can add them from the Team page.</p>
+              <p className="mt-6 text-center text-sm text-muted-foreground">No employees yet. The owner can add them from the Team page.</p>
             )}
           </>
         ) : (
@@ -201,6 +201,6 @@ export default function AuthPage() {
       </div>
     );
   if (dir.isError || !dir.data)
-    return <div className="mx-auto flex min-h-[100dvh] max-w-md items-center px-6"><div className="w-full"><ErrorState message="Couldn't reach Daytask." onRetry={() => dir.refetch()} /></div></div>;
+    return <div className="mx-auto flex min-h-[100dvh] max-w-md items-center px-6"><div className="w-full"><ErrorState message="Couldn't reach Megatronics Day Task." onRetry={() => dir.refetch()} /></div></div>;
   return dir.data.needsSetup ? <Setup /> : <Login users={dir.data.users} />;
 }

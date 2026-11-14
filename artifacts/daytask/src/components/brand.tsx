@@ -3,13 +3,12 @@ import { initials } from '@/lib/daytask';
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <svg viewBox="0 0 32 32" className="h-8 w-8" aria-hidden>
-        <rect x="1" y="1" width="30" height="30" rx="9" fill="hsl(var(--primary))" />
-        <path d="M8 21 a8 8 0 0 1 16 0" fill="none" stroke="hsl(var(--accent))" strokeWidth="3" strokeLinecap="round" />
-        <path d="M11.5 15.5l3 3 6-7" fill="none" stroke="hsl(var(--primary-foreground))" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+    <div className={cn('flex shrink-0 items-center gap-2 sm:gap-3', className)}>
+      <svg viewBox="60 130 470 135" className="h-9 w-28 rounded-md bg-black sm:h-11 sm:w-40" role="img" aria-label="Megatronics">
+        <title>Megatronics</title>
+        <image href={`${import.meta.env.BASE_URL}megatronics-logo.png`} width="612" height="408" />
       </svg>
-      <span className="font-display text-xl font-bold">Daytask</span>
+      <span className="font-display text-sm font-bold sm:text-lg">Day Task</span>
     </div>
   );
 }

@@ -20,8 +20,8 @@ router.post("/auth/setup", limitLogin, async (req, res) => {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(624019)");
     const existing = await client.query("SELECT id FROM users WHERE role='admin'");
-    if (existing.rowCount) { await client.query("ROLLBACK"); res.status(409).json({ error: "The manager account has already been set up. Please sign in." }); return; }
-    const result = await client.query("INSERT INTO users(name,role,password_hash,department,color) VALUES($1,'admin',$2,'Management','#56866c') RETURNING *", [parsed.data.name.trim(), hash]);
+    if (existing.rowCount) { await client.query("ROLLBACK"); res.status(409).json({ error: "The owner account has already been set up. Please sign in." }); return; }
+    const result = await client.query("INSERT INTO users(name,role,password_hash,department,color) VALUES($1,'admin',$2,'Owner','#56866c') RETURNING *", [parsed.data.name.trim(), hash]);
     user = publicUser(result.rows[0]);
     await client.query("COMMIT");
   } catch (error) { await client.query("ROLLBACK"); throw error; }

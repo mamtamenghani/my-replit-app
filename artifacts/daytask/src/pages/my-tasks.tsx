@@ -58,7 +58,7 @@ export default function MyTasks({ user }: { user: User }) {
 
       {tasks.isLoading && [0, 1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted" />)}
       {tasks.isError && <ErrorState message="Couldn't load your tasks." onRetry={() => tasks.refetch()} />}
-      {tasks.data && list.length === 0 && <EmptyState icon={<Coffee className="h-6 w-6" />} title="Your day is clear" body="Your manager hasn't assigned anything yet. New tasks appear here automatically." />}
+      {tasks.data && list.length === 0 && <EmptyState icon={<Coffee className="h-6 w-6" />} title="Your day is clear" body="The owner hasn't assigned anything yet. New tasks appear here automatically." />}
 
       <ol className="space-y-3">
         {list.map((t, i) => {

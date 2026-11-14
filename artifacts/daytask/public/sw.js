@@ -5,6 +5,7 @@ self.addEventListener('push', (event) => {
   try { payload = event.data ? event.data.json() : {}; } catch { payload = { message: event.data ? event.data.text() : '' }; }
   event.waitUntil(self.registration.showNotification('Megatronics Day Task', {
     body: payload.message || 'A task was updated',
+    icon: new URL('megatronics-icon-192.png', self.registration.scope).href,
     tag: 'daytask-' + (payload.id || Date.now()),
     data: { url: self.registration.scope + 'dashboard' },
   }));

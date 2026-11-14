@@ -48,6 +48,7 @@ A mobile-friendly employee daily task manager with manager assignment, employee 
 - Workday task slots must stay within 10:00 AM to 8:30 PM.
 - Employees use their own selected name and 4-digit PIN or password and see only their own tasks.
 - Company name is Megatronics; use the supplied Megatronics logo and call the admin role Owner, not Manager. Keep internal `admin` role identifiers for compatibility.
+- Installed home-screen apps must display the supplied Megatronics logo, including Android app icons and the iPhone touch icon.
 
 ## Gotchas
 

@@ -164,6 +164,23 @@ export const GetSheetStatusResponse = zod.object({
 })
 
 
+export const GetMisReportResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "taskId": zod.string(),
+  "date": zod.string(),
+  "teamMember": zod.string(),
+  "taskName": zod.string(),
+  "status": zod.enum(['Done', 'Not Done']),
+  "timeGiven": zod.string().nullable(),
+  "timeDone": zod.string().nullable(),
+  "timeGivenAt": zod.string().nullable(),
+  "timeDoneAt": zod.string().nullable()
+})),
+  "teamMembers": zod.array(zod.string()),
+  "sourceUrl": zod.string()
+})
+
+
 export const RetrySheetSyncResponse = zod.void()
 
 

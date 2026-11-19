@@ -27,6 +27,7 @@ import type {
   HealthStatus,
   ListTasksParams,
   LoginInput,
+  MisReport,
   Notification,
   PushConfig,
   PushInput,
@@ -1011,6 +1012,77 @@ export function useGetSheetStatus<TData = Awaited<ReturnType<typeof getSheetStat
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetSheetStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetMisReportUrl = () => {
+
+
+
+
+  return `/api/sheets/mis`
+}
+
+export const getMisReport = async ( options?: Parameters<typeof customFetch>[1]): Promise<MisReport> => {
+
+  return customFetch<MisReport>(getGetMisReportUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMisReportQueryKey = () => {
+    return [
+    `/api/sheets/mis`
+    ] as const;
+    }
+
+
+export const getGetMisReportQueryOptions = <TData = Awaited<ReturnType<typeof getMisReport>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMisReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMisReportQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMisReport>>> = ({ signal }) => getMisReport({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMisReport>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMisReportQueryResult = NonNullable<Awaited<ReturnType<typeof getMisReport>>>
+export type GetMisReportQueryError = ErrorType<unknown>
+
+
+
+export function useGetMisReport<TData = Awaited<ReturnType<typeof getMisReport>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMisReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMisReportQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -136,6 +136,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/SheetStatus" }
+  /sheets/mis:
+    get:
+      operationId: getMisReport
+      responses:
+        "200":
+          description: Task MIS data read from the connected Google Sheet
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MisReport" }
   /sheets/retry:
     post:
       operationId: retrySheetSync
@@ -335,6 +344,30 @@ components:
         lastSyncedAt: { type: [string, "null"] }
         error: { type: [string, "null"] }
         url: { type: string }
+    MisTask:
+      type: object
+      required: [taskId, date, teamMember, taskName, status, timeGiven, timeDone, timeGivenAt, timeDoneAt]
+      properties:
+        taskId: { type: string }
+        date: { type: string }
+        teamMember: { type: string }
+        taskName: { type: string }
+        status: { type: string, enum: [Done, "Not Done"] }
+        timeGiven: { type: [string, "null"] }
+        timeDone: { type: [string, "null"] }
+        timeGivenAt: { type: [string, "null"] }
+        timeDoneAt: { type: [string, "null"] }
+    MisReport:
+      type: object
+      required: [tasks, teamMembers, sourceUrl]
+      properties:
+        tasks:
+          type: array
+          items: { $ref: "#/components/schemas/MisTask" }
+        teamMembers:
+          type: array
+          items: { type: string }
+        sourceUrl: { type: string }
     StatusInput:
       type: object
       required: [done]

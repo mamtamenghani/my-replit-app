@@ -5,7 +5,7 @@ import {
   useListNotifications, useLogout, useMarkNotificationsRead, getListNotificationsQueryKey,
   getPushConfig, subscribePush, type User,
 } from '@workspace/api-client-react';
-import { Bell, BellRing, CalendarCheck, History, LayoutGrid, LogOut, Users, Check } from 'lucide-react';
+import { Bell, BellRing, CalendarCheck, ChartNoAxesCombined, History, LayoutGrid, LogOut, Users, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Logo, Avatar } from '@/components/brand';
 import { useLive, base64urlToUint8Array } from '@/lib/live';
@@ -161,7 +161,7 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
     },
   });
   const nav = user.role !== 'employee'
-    ? [{ href: '/dashboard', label: 'Today', icon: LayoutGrid }, { href: '/team', label: 'Team', icon: Users }, { href: '/activity', label: 'Activity', icon: History }]
+    ? [{ href: '/dashboard', label: 'Today', icon: LayoutGrid }, { href: '/team', label: 'Team', icon: Users }, { href: '/activity', label: 'Activity', icon: History }, { href: '/mis', label: 'MIS Report', icon: ChartNoAxesCombined }]
     : [{ href: '/my-tasks', label: 'My day', icon: CalendarCheck }];
   return (
     <div className="min-h-[100dvh] pb-20 md:pb-0">
@@ -193,7 +193,7 @@ export function Shell({ user, children }: { user: User; children: ReactNode }) {
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6 md:py-8">{children}</main>
       {nav.length > 1 && (
-        <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+          <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
           {nav.map((n) => (
             <Link key={n.href} href={n.href} data-testid={`link-mobile-${n.label.toLowerCase()}`}
               className={cn('flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium', loc === n.href ? 'text-primary' : 'text-muted-foreground')}>

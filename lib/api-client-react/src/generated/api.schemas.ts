@@ -114,6 +114,36 @@ export interface SheetStatus {
   url: string;
 }
 
+export type MisTaskStatus = typeof MisTaskStatus[keyof typeof MisTaskStatus];
+
+
+export const MisTaskStatus = {
+  Done: 'Done',
+  Not_Done: 'Not Done',
+} as const;
+
+export interface MisTask {
+  taskId: string;
+  date: string;
+  teamMember: string;
+  taskName: string;
+  status: MisTaskStatus;
+  /** @nullable */
+  timeGiven: string | null;
+  /** @nullable */
+  timeDone: string | null;
+  /** @nullable */
+  timeGivenAt: string | null;
+  /** @nullable */
+  timeDoneAt: string | null;
+}
+
+export interface MisReport {
+  tasks: MisTask[];
+  teamMembers: string[];
+  sourceUrl: string;
+}
+
 export interface StatusInput {
   done: boolean;
 }

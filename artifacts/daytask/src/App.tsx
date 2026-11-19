@@ -10,6 +10,7 @@ import AuthPage from '@/pages/auth';
 import Dashboard from '@/pages/dashboard';
 import Team from '@/pages/team';
 import Activity from '@/pages/activity';
+import MisReport from '@/pages/mis-report';
 import MyTasks from '@/pages/my-tasks';
 import { Shell } from '@/components/shell';
 import { Logo, ErrorState } from '@/components/brand';
@@ -54,6 +55,7 @@ function Router() {
         <Route path="/dashboard">{() => <Protected role="admin">{() => <Dashboard />}</Protected>}</Route>
         <Route path="/team">{() => <Protected role="admin">{() => <Team />}</Protected>}</Route>
         <Route path="/activity">{() => <Protected role="admin">{() => <Activity />}</Protected>}</Route>
+        <Route path="/mis">{() => <Protected role="admin">{() => <MisReport />}</Protected>}</Route>
         <Route path="/my-tasks">{() => <Protected role="employee">{(u) => <MyTasks user={u} />}</Protected>}</Route>
         <Route component={NotFound} />
       </Switch>

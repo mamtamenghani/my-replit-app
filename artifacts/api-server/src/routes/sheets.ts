@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { pool } from "@workspace/db";
-import { GetSheetStatusResponse } from "@workspace/api-zod";
+import { GetMisReportResponse, GetSheetStatusResponse } from "@workspace/api-zod";
 import { requireAdmin } from "../lib/auth";
-import { markSheetDirty, spreadsheetUrl, retrySheetSync } from "../lib/sheets";
+import { getMisReportData, markSheetDirty, spreadsheetUrl, retrySheetSync } from "../lib/sheets";
 const router = Router();
+router.get("/sheets/mis", requireAdmin, async (_req,res) => {
+  res.json(GetMisReportResponse.parse(await getMisReportData()));
+});
 router.get("/sheets/status", requireAdmin, async (_req,res) => {
   const { rows } = await pool.query("SELECT * FROM sheet_sync WHERE id=1");
   const state = rows[0];

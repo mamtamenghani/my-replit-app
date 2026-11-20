@@ -322,6 +322,193 @@ async function parseSuccessBody(
   }
 }
 
+const API_CACHE_PREFIX = "megatronics.daytask.api.v1:";
+const API_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function apiCacheKey(url: string): string | null {
+  try {
+    const parsed = new URL(url, "http://daytask.local");
+    if (!parsed.pathname.startsWith("/api/")) return null;
+    return `${parsed.pathname}${parsed.search}`;
+  } catch {
+    return null;
+  }
+}
+
+function saveApiCache(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(
+      `${API_CACHE_PREFIX}${key}`,
+      JSON.stringify({ savedAt: Date.now(), value }),
+    );
+  } catch {
+    // Storage may be unavailable or full; API responses remain usable.
+  }
+}
+
+function loadApiCache<T>(key: string, isValid: (value: unknown) => value is T): T | null {
+  try {
+    const raw = localStorage.getItem(`${API_CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const cached: unknown = JSON.parse(raw);
+    if (
+      !isRecord(cached) ||
+      typeof cached.savedAt !== "number" ||
+      Date.now() - cached.savedAt > API_CACHE_TTL_MS ||
+      !isValid(cached.value)
+    ) {
+      localStorage.removeItem(`${API_CACHE_PREFIX}${key}`);
+      return null;
+    }
+    return cached.value;
+  } catch {
+    return null;
+  }
+}
+
+function cachedOrDefault<T>(
+  key: string,
+  data: unknown,
+  isValid: (value: unknown) => value is T,
+  fallback: T,
+): T {
+  if (isValid(data)) {
+    saveApiCache(key, data);
+    return data;
+  }
+  return loadApiCache(key, isValid) ?? fallback;
+}
+
+function normalizeApiRead(
+  url: string,
+  data: unknown,
+): { matched: boolean; value: unknown } {
+  const key = apiCacheKey(url);
+  if (!key) return { matched: false, value: data };
+
+  const { pathname } = new URL(key, "http://daytask.local");
+  const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
+
+  if (
+    pathname === "/api/tasks" ||
+    pathname === "/api/employees" ||
+    pathname === "/api/assistants" ||
+    pathname === "/api/notifications"
+  ) {
+    return { matched: true, value: cachedOrDefault(key, data, isArray, []) };
+  }
+
+  if (pathname === "/api/auth/directory") {
+    const validDirectory = (value: unknown): value is { needsSetup: boolean; users: unknown[] } =>
+      isRecord(value) && typeof value.needsSetup === "boolean" && Array.isArray(value.users);
+    return {
+      matched: true,
+      value: cachedOrDefault(key, data, validDirectory, { needsSetup: false, users: [] }),
+    };
+  }
+
+  if (pathname === "/api/auth/me") {
+    const validSession = (value: unknown): value is { user: unknown } =>
+      isRecord(value) && ("user" in value) && (value.user === null || isRecord(value.user));
+    return {
+      matched: true,
+      value: validSession(data) ? data : { user: null },
+    };
+  }
+
+  if (pathname === "/api/dashboard") {
+    const validDashboard = (value: unknown): value is Record<string, unknown> & { employees: unknown[] } =>
+      isRecord(value) &&
+      typeof value.totalTasks === "number" &&
+      typeof value.doneTasks === "number" &&
+      typeof value.pendingTasks === "number" &&
+      typeof value.totalEmployees === "number" &&
+      Array.isArray(value.employees);
+    const emptyDashboard = {
+      totalTasks: 0,
+      doneTasks: 0,
+      pendingTasks: 0,
+      totalEmployees: 0,
+      employees: [],
+    };
+    return { matched: true, value: cachedOrDefault(key, data, validDashboard, emptyDashboard) };
+  }
+
+  if (pathname === "/api/sheets/mis") {
+    const validReport = (value: unknown): value is Record<string, unknown> & {
+      tasks: unknown[];
+      teamMembers: unknown[];
+      sourceUrl: string;
+    } =>
+      isRecord(value) &&
+      Array.isArray(value.tasks) &&
+      Array.isArray(value.teamMembers) &&
+      typeof value.sourceUrl === "string";
+    const emptyReport = { tasks: [], teamMembers: [], sourceUrl: "" };
+    return { matched: true, value: cachedOrDefault(key, data, validReport, emptyReport) };
+  }
+
+  if (pathname === "/api/sheets/status") {
+    const validStatus = (value: unknown): value is Record<string, unknown> & {
+      pending: boolean;
+      lastSyncedAt: string | null;
+      error: string | null;
+      url: string;
+    } =>
+      isRecord(value) &&
+      typeof value.pending === "boolean" &&
+      (typeof value.lastSyncedAt === "string" || value.lastSyncedAt === null) &&
+      (typeof value.error === "string" || value.error === null) &&
+      typeof value.url === "string";
+    const unavailableStatus = {
+      pending: false,
+      lastSyncedAt: null,
+      error: "API unavailable on this static deployment",
+      url: "",
+    };
+    return { matched: true, value: cachedOrDefault(key, data, validStatus, unavailableStatus) };
+  }
+
+  if (pathname === "/api/push/config") {
+    const validPushConfig = (value: unknown): value is { publicKey: string } =>
+      isRecord(value) && typeof value.publicKey === "string";
+    return {
+      matched: true,
+      value: cachedOrDefault(key, data, validPushConfig, { publicKey: "" }),
+    };
+  }
+
+  if (pathname === "/api/healthz") {
+    const validHealth = (value: unknown): value is { status: string } =>
+      isRecord(value) && typeof value.status === "string";
+    return {
+      matched: true,
+      value: cachedOrDefault(key, data, validHealth, { status: "unavailable" }),
+    };
+  }
+
+  return { matched: false, value: data };
+}
+
+function isApiRequest(url: string): boolean {
+  return apiCacheKey(url) !== null;
+}
+
+function isHtmlResponse(response: Response, data: unknown): boolean {
+  if (getMediaType(response.headers) === "text/html") return true;
+  return typeof data === "string" && /^\s*(?:<!doctype html|<html[\s>])/i.test(data);
+}
+
+function unavailableApiError(): Error {
+  return new Error(
+    "The Day Task API is unavailable. Static hosting can show cached data, but sign-in and updates need the API service.",
+  );
+}
+
 export async function customFetch<T = unknown>(
   input: RequestInfo | URL,
   options: CustomFetchOptions = {},
@@ -360,12 +547,37 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  let response: Response;
+  try {
+    response = await fetch(input, { ...init, method, headers });
+  } catch (error) {
+    if (method === "GET" && isApiRequest(requestInfo.url)) {
+      const fallback = normalizeApiRead(requestInfo.url, null);
+      if (fallback.matched) return fallback.value as T;
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
+    if (method === "GET" && isApiRequest(requestInfo.url) && response.status >= 500) {
+      const fallback = normalizeApiRead(requestInfo.url, null);
+      if (fallback.matched) return fallback.value as T;
+    }
     throw new ApiError(response, errorData, requestInfo);
   }
 
-  return (await parseSuccessBody(response, responseType, requestInfo)) as T;
+  const data = await parseSuccessBody(response, responseType, requestInfo);
+  if (isApiRequest(requestInfo.url) && isHtmlResponse(response, data)) {
+    if (method === "GET") {
+      const fallback = normalizeApiRead(requestInfo.url, null);
+      if (fallback.matched) return fallback.value as T;
+    }
+    throw unavailableApiError();
+  }
+  if (method === "GET") {
+    const normalized = normalizeApiRead(requestInfo.url, data);
+    if (normalized.matched) return normalized.value as T;
+  }
+  return data as T;
 }

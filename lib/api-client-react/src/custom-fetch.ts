@@ -560,14 +560,30 @@ export async function customFetch<T = unknown>(
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
-    if (method === "GET" && isApiRequest(requestInfo.url) && response.status >= 500) {
+    if (
+      method === "GET" &&
+      isApiRequest(requestInfo.url) &&
+      (response.status >= 500 || isHtmlResponse(response, errorData))
+    ) {
       const fallback = normalizeApiRead(requestInfo.url, null);
       if (fallback.matched) return fallback.value as T;
     }
     throw new ApiError(response, errorData, requestInfo);
   }
 
-  const data = await parseSuccessBody(response, responseType, requestInfo);
+  let data: unknown;
+  try {
+    data = await parseSuccessBody(response, responseType, requestInfo);
+  } catch (error) {
+    // Some static hosts serve their SPA document with an incorrect JSON
+    // content type. Treat malformed JSON on known API reads like an offline
+    // response rather than letting the parse error reach array consumers.
+    if (method === "GET" && isApiRequest(requestInfo.url)) {
+      const fallback = normalizeApiRead(requestInfo.url, null);
+      if (fallback.matched) return fallback.value as T;
+    }
+    throw error;
+  }
   if (isApiRequest(requestInfo.url) && isHtmlResponse(response, data)) {
     if (method === "GET") {
       const fallback = normalizeApiRead(requestInfo.url, null);
